@@ -209,6 +209,14 @@ function llenarPeriodos() {
 // ── NAVEGACION ────────────────────────────────────────────────
 $('goLectura').addEventListener('click', function () { llenarPeriodos(); msg('lecturaMsg',''); show('viewLectura'); });
 $('goPago').addEventListener('click', function () { llenarPeriodos(); msg('pagoMsg',''); show('viewPago'); });
+$('goContrato').addEventListener('click', function () {
+  loader(true, 'Abriendo contrato…');
+  api('contrato', { token: state.token }).then(function (r) {
+    loader(false);
+    if (!r.ok) { alert(r.error); return; }
+    window.open(r.url, '_blank');
+  });
+});
 $('lecturaBack').addEventListener('click', function () { show('viewDash'); });
 $('pagoBack').addEventListener('click', function () { show('viewDash'); });
 
@@ -221,7 +229,10 @@ $('enviarLectura').addEventListener('click', function () {
     luz: $('lLuz').value.trim(), gas: $('lGas').value.trim(), agua: $('lAgua').value.trim(),
     fotoLuz: $('fLuz')._data || '', fotoGas: $('fGas')._data || '', fotoAgua: $('fAgua')._data || ''
   };
-  if (!p.luz && !p.gas && !p.agua) { msg('lecturaMsg', 'Ingresa al menos una lectura.', 'err'); return; }
+  // Lectura parcial permitida: basta una lectura O una foto de cualquier servicio
+  if (!p.luz && !p.gas && !p.agua && !p.fotoLuz && !p.fotoGas && !p.fotoAgua) {
+    msg('lecturaMsg', 'Ingresa al menos una lectura o una foto.', 'err'); return;
+  }
   loader(true, 'Enviando lecturas y fotos…');
   api('subirLectura', p).then(function (r) {
     loader(false);
