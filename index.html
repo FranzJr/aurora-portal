@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Portal Aurora II</title>
+  <meta name="theme-color" content="#263238">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ENCABEZADO -->
+  <header class="topbar" id="topbar" hidden>
+    <div class="topbar-inner">
+      <div>
+        <div class="brand">Aurora II</div>
+        <div class="sub" id="userLine"></div>
+      </div>
+      <button class="link-btn" id="logoutBtn">Salir</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- ===== LOGIN ===== -->
+    <section id="viewLogin" class="view">
+      <div class="card login-card">
+        <div class="logo">🏠</div>
+        <h1>Portal Aurora II</h1>
+        <p class="muted">Tu estado de cuenta, lecturas y pagos</p>
+
+        <!-- Paso 1: correo -->
+        <div id="stepEmail">
+          <label>Tu correo electrónico</label>
+          <input type="email" id="emailInput" placeholder="tucorreo@ejemplo.com" autocomplete="email" inputmode="email">
+          <button class="btn primary" id="sendCodeBtn">Enviar código</button>
+        </div>
+
+        <!-- Paso 2: código -->
+        <div id="stepCode" hidden>
+          <p class="muted" id="codeHint"></p>
+          <label>Código de 6 dígitos</label>
+          <input type="text" id="codeInput" placeholder="● ● ● ● ● ●" inputmode="numeric" maxlength="6" class="code-input">
+          <button class="btn primary" id="verifyBtn">Ingresar</button>
+          <button class="link-btn center" id="backToEmail">Cambiar correo</button>
+        </div>
+
+        <div class="msg" id="loginMsg"></div>
+      </div>
+      <p class="foot muted">Portal de arrendatarios</p>
+    </section>
+
+    <!-- ===== DASHBOARD ===== -->
+    <section id="viewDash" class="view" hidden>
+
+      <div class="summary">
+        <div class="sum-card pend">
+          <div class="sum-label">Servicios pendientes</div>
+          <div class="sum-val" id="sumServ">$0</div>
+        </div>
+        <div class="sum-card pend">
+          <div class="sum-label">Arriendo pendiente</div>
+          <div class="sum-val" id="sumArr">$0</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn action" id="goLectura">📷 Registrar lecturas</button>
+        <button class="btn action" id="goPago">🧾 Subir comprobante</button>
+      </div>
+
+      <div id="lecturaAviso" class="aviso" hidden></div>
+
+      <h2 class="section-title">Tu estado de cuenta</h2>
+      <div id="mesesList" class="meses"></div>
+
+      <div class="card pago-datos">
+        <div class="pago-datos-title">Datos para el pago</div>
+        <div id="cuentaPago"></div>
+      </div>
+    </section>
+
+    <!-- ===== REGISTRAR LECTURA ===== -->
+    <section id="viewLectura" class="view" hidden>
+      <button class="link-btn" id="lecturaBack">‹ Volver</button>
+      <div class="card">
+        <h2>Registrar lecturas</h2>
+        <label>Mes que reportas</label>
+        <select id="lecturaPeriodo"></select>
+
+        <div class="medidor">
+          <div class="medidor-head">⚡ Electricidad (Luz)</div>
+          <label>Lectura actual (kWh)</label>
+          <input type="text" id="lLuz" inputmode="decimal" placeholder="Ej: 1978.7">
+          <label>Foto del medidor</label>
+          <input type="file" accept="image/*" capture="environment" id="fLuz">
+          <div class="preview" id="pLuz"></div>
+        </div>
+
+        <div class="medidor">
+          <div class="medidor-head">🔥 Gas</div>
+          <label>Lectura actual (m³)</label>
+          <input type="text" id="lGas" inputmode="decimal" placeholder="Ej: 87.775">
+          <label>Foto del medidor</label>
+          <input type="file" accept="image/*" capture="environment" id="fGas">
+          <div class="preview" id="pGas"></div>
+        </div>
+
+        <div class="medidor">
+          <div class="medidor-head">💧 Agua</div>
+          <label>Lectura actual (m³)</label>
+          <input type="text" id="lAgua" inputmode="decimal" placeholder="Ej: 156.329">
+          <label>Foto del medidor</label>
+          <input type="file" accept="image/*" capture="environment" id="fAgua">
+          <div class="preview" id="pAgua"></div>
+        </div>
+
+        <button class="btn primary" id="enviarLectura">Enviar lecturas</button>
+        <div class="msg" id="lecturaMsg"></div>
+      </div>
+    </section>
+
+    <!-- ===== SUBIR PAGO ===== -->
+    <section id="viewPago" class="view" hidden>
+      <button class="link-btn" id="pagoBack">‹ Volver</button>
+      <div class="card">
+        <h2>Subir comprobante de pago</h2>
+
+        <label>¿Qué estás pagando?</label>
+        <select id="pagoConcepto">
+          <option value="servicios">Servicios (luz, gas, agua...)</option>
+          <option value="arriendo">Arriendo</option>
+        </select>
+
+        <label>Mes</label>
+        <select id="pagoPeriodo"></select>
+
+        <label>Monto pagado</label>
+        <input type="text" id="pagoMonto" inputmode="numeric" placeholder="Ej: 85000">
+
+        <label>Foto del comprobante</label>
+        <input type="file" accept="image/*" capture="environment" id="fComprobante">
+        <div class="preview" id="pComprobante"></div>
+
+        <button class="btn primary" id="enviarPago">Enviar comprobante</button>
+        <div class="msg" id="pagoMsg"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- OVERLAY DE CARGA -->
+  <div id="loader" class="loader" hidden><div class="spinner"></div><div id="loaderText">Cargando…</div></div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

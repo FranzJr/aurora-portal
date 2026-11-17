@@ -1,0 +1,122 @@
+/* ===== Portal Aurora II — mobile-first ===== */
+:root {
+  --bg: #f4f5f7;
+  --card: #ffffff;
+  --ink: #1f2933;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --brand: #263238;
+  --primary: #1565c0;
+  --primary-ink: #0d47a1;
+  --ok: #1b5e20;
+  --ok-bg: #e8f5e9;
+  --pend: #bf360c;
+  --pend-bg: #fff3e0;
+  --radius: 14px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 6px 16px rgba(0,0,0,.05);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }   /* el atributo hidden siempre gana */
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.5;
+}
+
+.wrap { max-width: 560px; margin: 0 auto; padding: 16px; }
+
+/* Topbar */
+.topbar { background: var(--brand); color: #fff; position: sticky; top: 0; z-index: 10; }
+.topbar-inner { max-width: 560px; margin: 0 auto; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+.brand { font-weight: 700; font-size: 16px; }
+.sub { font-size: 12px; opacity: .8; }
+
+/* Cards */
+.card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+
+/* Login */
+.login-card { text-align: center; margin-top: 28px; }
+.logo { font-size: 44px; }
+.login-card h1 { font-size: 20px; margin: 6px 0 2px; }
+.login-card label { text-align: left; }
+.code-input { text-align: center; letter-spacing: 10px; font-size: 24px; font-weight: 700; }
+.foot { text-align: center; font-size: 12px; margin-top: 10px; }
+
+/* Forms */
+label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin: 14px 0 6px; }
+input, select {
+  width: 100%; padding: 13px 14px; font-size: 16px; border: 1.5px solid var(--line);
+  border-radius: 10px; background: #fff; color: var(--ink); outline: none;
+}
+input:focus, select:focus { border-color: var(--primary); }
+
+/* Buttons */
+.btn { width: 100%; padding: 14px; font-size: 16px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; margin-top: 16px; }
+.btn.primary { background: var(--primary); color: #fff; }
+.btn.primary:active { background: var(--primary-ink); }
+.btn.action { background: #fff; color: var(--ink); border: 1.5px solid var(--line); box-shadow: var(--shadow); margin-top: 0; }
+.link-btn { background: none; border: none; color: var(--primary); font-weight: 600; font-size: 14px; cursor: pointer; padding: 6px 0; }
+.link-btn.center { display: block; margin: 8px auto 0; }
+
+/* Summary */
+.summary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.sum-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
+.sum-card.pend { border-left: 4px solid var(--pend); }
+.sum-label { font-size: 12px; color: var(--muted); }
+.sum-val { font-size: 22px; font-weight: 800; margin-top: 4px; }
+.sum-val.zero { color: var(--ok); }
+
+/* Actions row */
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
+.section-title { font-size: 15px; margin: 18px 4px 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+/* Aviso */
+.aviso { background: var(--pend-bg); border-left: 4px solid var(--pend); border-radius: 8px; padding: 12px 14px; font-size: 13px; margin-bottom: 14px; }
+
+/* Meses */
+.mes { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden; }
+.mes-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; cursor: pointer; }
+.mes-per { font-weight: 700; text-transform: capitalize; }
+.mes-badges { display: flex; gap: 6px; }
+.badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+.badge.ok { background: var(--ok-bg); color: var(--ok); }
+.badge.pend { background: var(--pend-bg); color: var(--pend); }
+.mes-body { padding: 0 16px 14px; border-top: 1px solid var(--line); display: none; }
+.mes.open .mes-body { display: block; }
+.row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 14px; border-bottom: 1px dashed var(--line); }
+.row:last-child { border-bottom: none; }
+.row .k { color: var(--muted); }
+.row.total { font-weight: 800; border-top: 2px solid var(--line); margin-top: 4px; padding-top: 10px; }
+.row .pend-v { color: var(--pend); font-weight: 700; }
+.row .ok-v { color: var(--ok); font-weight: 700; }
+.mes-sub { font-size: 12px; color: var(--muted); margin: 10px 0 2px; font-weight: 700; text-transform: uppercase; }
+
+/* Pago datos */
+.pago-datos-title { font-weight: 700; margin-bottom: 6px; }
+
+/* Medidor blocks */
+.medidor { border: 1.5px solid var(--line); border-radius: 12px; padding: 14px; margin-top: 14px; }
+.medidor-head { font-weight: 700; font-size: 15px; }
+.preview { margin-top: 8px; }
+.preview img { max-width: 100%; border-radius: 8px; border: 1px solid var(--line); }
+
+/* Messages */
+.msg { margin-top: 14px; font-size: 14px; padding: 0; min-height: 0; }
+.msg.err { color: var(--pend); background: var(--pend-bg); padding: 10px 12px; border-radius: 8px; }
+.msg.ok { color: var(--ok); background: var(--ok-bg); padding: 10px 12px; border-radius: 8px; }
+.muted { color: var(--muted); }
+
+/* Loader */
+.loader { position: fixed; inset: 0; background: rgba(255,255,255,.75); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; z-index: 100; backdrop-filter: blur(2px); }
+.spinner { width: 38px; height: 38px; border: 4px solid var(--line); border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:#0f1720; --card:#1a2430; --ink:#e7edf3; --muted:#9aa7b4; --line:#2b3745; --brand:#0b1016;
+  }
+  input, select { background:#121b24; color: var(--ink); }
+  .btn.action { background:#1a2430; }
+}
