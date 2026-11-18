@@ -73,6 +73,61 @@ input:focus, select:focus { border-color: var(--primary); }
 
 .section-title { font-size: 15px; margin: 18px 4px 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
 
+/* Textarea */
+textarea {
+  width: 100%; padding: 13px 14px; font-size: 15px; border: 1.5px solid var(--line);
+  border-radius: 10px; background: #fff; color: var(--ink); outline: none; resize: vertical;
+  font-family: inherit; line-height: 1.4;
+}
+textarea:focus { border-color: var(--primary); }
+
+/* ===== Admin ===== */
+.admin-title { font-size: 20px; margin: 18px 4px 14px; }
+.dash-apt { font-size: 18px; font-weight: 800; margin: 4px 4px 12px; }
+.total-card { text-align: center; }
+.sum-val.big { font-size: 28px; }
+
+/* Selector de apartamento */
+.apt-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.apt-btn {
+  background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 14px 8px; cursor: pointer; text-align: center;
+}
+.apt-btn .n { font-size: 16px; font-weight: 800; color: var(--ink); }
+.apt-btn .s { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.apt-btn .p { font-size: 12px; font-weight: 700; margin-top: 6px; }
+.apt-btn .p.pend { color: var(--pend); }
+.apt-btn .p.ok { color: var(--ok); }
+
+/* Gráficas de barras */
+.chart { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; margin-bottom: 16px; }
+.bar-row { margin-bottom: 12px; }
+.bar-row:last-child { margin-bottom: 0; }
+.bar-top { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+.bar-top .bk { color: var(--muted); }
+.bar-top .bv { font-weight: 700; }
+.bar-track { background: var(--line); border-radius: 20px; height: 12px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 20px; background: var(--primary); min-width: 2px; transition: width .4s; }
+.bar-fill.pend { background: var(--pend); }
+.bar-fill.luz { background: #f9a825; }
+.bar-fill.gas { background: #e53935; }
+.bar-fill.agua { background: #039be5; }
+.bar-fill.otros { background: #8e24aa; }
+.chart-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 8px; }
+
+/* Resultados conciliación */
+.match { border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; margin-top: 12px; }
+.match-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.match-monto { font-size: 17px; font-weight: 800; }
+.match-apt { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.match-linea { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: monospace; word-break: break-all; }
+.match-controls { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-top: 10px; align-items: end; }
+.match-controls label { margin: 0 0 4px; }
+.match-controls select { padding: 9px 10px; font-size: 14px; }
+.match .mini-btn { background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 10px 12px; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.match.done { opacity: .6; }
+.match.done .mini-btn { background: var(--ok); }
+
 /* Aviso (texto oscuro fijo: legible en claro y oscuro) */
 .aviso { background: #fff3e0; color: #8a3d00; border-left: 4px solid var(--pend); border-radius: 8px; padding: 12px 14px; font-size: 13px; margin-bottom: 14px; }
 .aviso strong { color: #6b2e00; }
@@ -119,6 +174,7 @@ input:focus, select:focus { border-color: var(--primary); }
   :root {
     --bg:#0f1720; --card:#1a2430; --ink:#e7edf3; --muted:#9aa7b4; --line:#2b3745; --brand:#0b1016;
   }
-  input, select { background:#121b24; color: var(--ink); }
+  input, select, textarea { background:#121b24; color: var(--ink); }
   .btn.action { background:#1a2430; }
+  .apt-btn { background:#1a2430; }
 }

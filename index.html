@@ -53,6 +53,9 @@
     <!-- ===== DASHBOARD ===== -->
     <section id="viewDash" class="view" hidden>
 
+      <button class="link-btn" id="dashBackAdmin" hidden>‹ Volver al panel</button>
+      <div class="dash-apt" id="dashAptTitle" hidden></div>
+
       <div class="summary">
         <div class="sum-card pend">
           <div class="sum-label">Servicios pendientes</div>
@@ -64,20 +67,72 @@
         </div>
       </div>
 
-      <div class="actions">
+      <div class="actions" id="tenantActions">
         <button class="btn action" id="goLectura">📷 Registrar lecturas</button>
         <button class="btn action" id="goPago">🧾 Subir comprobante</button>
       </div>
-      <button class="btn action full" id="goContrato">📄 Ver mi contrato</button>
 
       <div id="lecturaAviso" class="aviso" hidden></div>
 
-      <h2 class="section-title">Tu estado de cuenta</h2>
+      <h2 class="section-title">Estado de cuenta</h2>
       <div id="mesesList" class="meses"></div>
 
       <div class="card pago-datos">
         <div class="pago-datos-title">Datos para el pago</div>
         <div id="cuentaPago"></div>
+      </div>
+
+      <button class="btn action full" id="goContrato">📄 Ver contrato</button>
+    </section>
+
+    <!-- ===== PANEL ADMIN ===== -->
+    <section id="viewAdmin" class="view" hidden>
+      <h2 class="admin-title">Panel de administración</h2>
+
+      <div class="summary">
+        <div class="sum-card pend">
+          <div class="sum-label">Servicios pendientes</div>
+          <div class="sum-val" id="aServ">$0</div>
+        </div>
+        <div class="sum-card pend">
+          <div class="sum-label">Arriendo pendiente</div>
+          <div class="sum-val" id="aArr">$0</div>
+        </div>
+      </div>
+      <div class="card total-card">
+        <div class="sum-label">Total por recaudar</div>
+        <div class="sum-val big" id="aTotal">$0</div>
+      </div>
+
+      <h3 class="section-title">Pendiente por apartamento</h3>
+      <div id="chartPend" class="chart"></div>
+
+      <h3 class="section-title">Recibos del mes actual</h3>
+      <div id="chartMes" class="chart"></div>
+
+      <h3 class="section-title">Ver estado de cuenta</h3>
+      <div class="apt-selector" id="aptSelector"></div>
+
+      <button class="btn action full" id="goConciliar" hidden>🏦 Conciliar extracto</button>
+    </section>
+
+    <!-- ===== CONCILIAR EXTRACTO ===== -->
+    <section id="viewConciliar" class="view" hidden>
+      <button class="link-btn" id="conciliarBack">‹ Volver al panel</button>
+      <div class="card">
+        <h2>Conciliar extracto</h2>
+        <p class="muted">Adjunta el PDF del extracto y/o pega su texto. Buscaré los pagos que coinciden con arriendos y servicios pendientes.</p>
+
+        <label>Adjuntar extracto (PDF o foto) — opcional</label>
+        <input type="file" accept="application/pdf,image/*" id="fExtracto">
+        <div class="preview" id="pExtracto"></div>
+
+        <label>Texto del extracto</label>
+        <textarea id="extractoTexto" rows="7" placeholder="Pega aquí las líneas del extracto del banco…"></textarea>
+
+        <button class="btn primary" id="enviarConciliar">Conciliar</button>
+        <div class="msg" id="conciliarMsg"></div>
+        <div id="conciliarResultados"></div>
       </div>
     </section>
 

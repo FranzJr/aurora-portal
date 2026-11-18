@@ -5,7 +5,7 @@
 
 var CFG = window.PORTAL_CONFIG || {};
 var $ = function (id) { return document.getElementById(id); };
-var state = { token: null, nombre: null, apt: null, estado: null };
+var state = { token: null, nombre: null, apt: null, role: 'tenant', estado: null, admin: null };
 
 // ── API (POST text/plain para evitar preflight CORS) ──────────
 function api(action, payload) {
@@ -20,7 +20,7 @@ function api(action, payload) {
 
 // ── Utilidades UI ─────────────────────────────────────────────
 function show(view) {
-  ['viewLogin', 'viewDash', 'viewLectura', 'viewPago'].forEach(function (v) {
+  ['viewLogin', 'viewDash', 'viewLectura', 'viewPago', 'viewAdmin', 'viewConciliar'].forEach(function (v) {
     $(v).hidden = (v !== view);
   });
   window.scrollTo(0, 0);
@@ -97,20 +97,26 @@ $('verifyBtn').addEventListener('click', function () {
     loader(false);
     if (!r.ok) { msg('loginMsg', r.error, 'err'); return; }
     state.token = r.token; state.nombre = r.nombre; state.apt = r.apt;
-    try { localStorage.setItem('aurora_sess', JSON.stringify({ token: r.token, nombre: r.nombre, apt: r.apt })); } catch (e) {}
+    state.role = r.role || 'tenant'; state.conciliar = !!r.conciliar;
+    try { localStorage.setItem('aurora_sess', JSON.stringify({ token: r.token, nombre: r.nombre, apt: r.apt, role: state.role, conciliar: state.conciliar })); } catch (e) {}
     iniciarSesion();
   });
 });
 
 function iniciarSesion() {
   $('topbar').hidden = false;
-  $('userLine').textContent = state.nombre.split(' ')[0] + ' · ' + state.apt;
-  cargarEstado();
+  if (state.role === 'admin') {
+    $('userLine').textContent = state.nombre.split(' ')[0] + ' · Admin';
+    cargarAdmin();
+  } else {
+    $('userLine').textContent = state.nombre.split(' ')[0] + ' · ' + (state.apt || '');
+    cargarEstado();
+  }
 }
 
 $('logoutBtn').addEventListener('click', function () {
   try { localStorage.removeItem('aurora_sess'); } catch (e) {}
-  state = {};
+  state = { role: 'tenant' };
   $('topbar').hidden = true;
   $('stepCode').hidden = true; $('stepEmail').hidden = false;
   $('emailInput').value = ''; $('codeInput').value = '';
@@ -134,7 +140,14 @@ function cargarEstado() {
   });
 }
 
-function renderDash(r) {
+function renderDash(r, adminMode) {
+  // Modo admin: oculta acciones de arrendatario, muestra "volver al panel"
+  $('tenantActions').hidden = !!adminMode;
+  $('goContrato').hidden = !!adminMode;
+  $('dashBackAdmin').hidden = !adminMode;
+  $('dashAptTitle').hidden = !adminMode;
+  if (adminMode) $('dashAptTitle').textContent = r.apt + ' · ' + (r.nombre || '');
+
   $('sumServ').textContent = cop(r.pendientes.servicios);
   $('sumServ').className = 'sum-val' + (r.pendientes.servicios === 0 ? ' zero' : '');
   $('sumArr').textContent = cop(r.pendientes.arriendo);
@@ -219,6 +232,172 @@ $('goContrato').addEventListener('click', function () {
 });
 $('lecturaBack').addEventListener('click', function () { show('viewDash'); });
 $('pagoBack').addEventListener('click', function () { show('viewDash'); });
+$('dashBackAdmin').addEventListener('click', function () { show('viewAdmin'); });
+
+// ── PANEL ADMIN ───────────────────────────────────────────────
+function cargarAdmin() {
+  loader(true, 'Cargando panel…');
+  api('estadoAdmin', { token: state.token }).then(function (r) {
+    loader(false);
+    if (!r.ok) {
+      if (/sesion/i.test(r.error || '')) { $('logoutBtn').click(); }
+      alert(r.error || 'Error'); return;
+    }
+    state.admin = r;
+    renderAdmin(r);
+    show('viewAdmin');
+  });
+}
+
+function barRow(label, valor, max, cls, fmt) {
+  var pct = max > 0 ? Math.round(valor * 100 / max) : 0;
+  var txt = fmt ? fmt(valor) : cop(valor);
+  return '<div class="bar-row"><div class="bar-top"><span class="bk">' + label + '</span><span class="bv">' + txt + '</span></div>' +
+    '<div class="bar-track"><div class="bar-fill ' + (cls || '') + '" style="width:' + pct + '%"></div></div></div>';
+}
+
+function renderAdmin(r) {
+  $('aServ').textContent = cop(r.totales.servicios);
+  $('aArr').textContent = cop(r.totales.arriendo);
+  $('aTotal').textContent = cop(r.totales.recaudarTotal);
+
+  // Gráfica: pendiente por apartamento (serv + arriendo)
+  var maxPend = 0;
+  r.apts.forEach(function (e) { maxPend = Math.max(maxPend, e.pendientes.servicios + e.pendientes.arriendo); });
+  var chartP = r.apts.map(function (e) {
+    var tot = e.pendientes.servicios + e.pendientes.arriendo;
+    return barRow('Apto ' + e.key.slice(-1) + ' · ' + firstName(e.nombre), tot, maxPend, tot > 0 ? 'pend' : '');
+  }).join('');
+  $('chartPend').innerHTML = chartP || '<div class="chart-empty">Sin datos</div>';
+
+  // Gráfica: recibos del mes actual (por servicio, sumando los 3 apts)
+  var acc = { luz: 0, gas: 0, agua: 0, otros: 0 }, periodoMes = '';
+  r.apts.forEach(function (e) {
+    if (!e.mesActual) return;
+    periodoMes = e.mesActual.periodo;
+    var d = e.mesActual.servicios.detalle;
+    acc.luz += d.luz || 0; acc.gas += d.gas || 0; acc.agua += d.agua || 0;
+    acc.otros += (d.aseo || 0) + (d.alcant || 0);
+  });
+  var maxMes = Math.max(acc.luz, acc.gas, acc.agua, acc.otros);
+  var tituloMes = periodoMes ? '<div class="muted" style="font-size:12px;margin-bottom:10px;text-transform:capitalize">' + periodoMes + '</div>' : '';
+  var chartM = (maxMes > 0) ? (tituloMes +
+    barRow('⚡ Luz', acc.luz, maxMes, 'luz') +
+    barRow('🔥 Gas', acc.gas, maxMes, 'gas') +
+    barRow('💧 Agua', acc.agua, maxMes, 'agua') +
+    barRow('🧹 Aseo + Alcant.', acc.otros, maxMes, 'otros')
+  ) : '<div class="chart-empty">El mes actual aún no tiene recibos cerrados</div>';
+  $('chartMes').innerHTML = chartM;
+
+  // Selector de apartamentos
+  $('aptSelector').innerHTML = r.apts.map(function (e) {
+    var tot = e.pendientes.servicios + e.pendientes.arriendo;
+    var cls = tot > 0 ? 'pend' : 'ok';
+    var txt = tot > 0 ? cop(tot) : 'Al día';
+    return '<div class="apt-btn" data-apt="' + e.key + '">' +
+      '<div class="n">Apto ' + e.key.slice(-1) + '</div>' +
+      '<div class="s">' + firstName(e.nombre) + '</div>' +
+      '<div class="p ' + cls + '">' + txt + '</div></div>';
+  }).join('');
+  Array.prototype.forEach.call(document.querySelectorAll('#aptSelector .apt-btn'), function (btn) {
+    btn.addEventListener('click', function () { verAptAdmin(btn.getAttribute('data-apt')); });
+  });
+
+  $('goConciliar').hidden = !r.conciliar;
+}
+
+function firstName(n) { return String(n || '').split(/[ /]/)[0]; }
+
+function verAptAdmin(aptKey) {
+  var e = (state.admin.apts || []).filter(function (x) { return x.key === aptKey; })[0];
+  if (!e) return;
+  e.cuentaPago = state.admin.cuentaPago;
+  renderDash(e, true);
+  show('viewDash');
+}
+
+// ── CONCILIACIÓN ──────────────────────────────────────────────
+$('goConciliar').addEventListener('click', function () {
+  msg('conciliarMsg', ''); $('conciliarResultados').innerHTML = '';
+  show('viewConciliar');
+});
+$('conciliarBack').addEventListener('click', function () { show('viewAdmin'); });
+
+// Leer archivo (PDF/imagen) a dataURL sin redimensionar
+function fileToDataURL(file) {
+  return new Promise(function (resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function (ev) { resolve(ev.target.result); };
+    reader.onerror = reject; reader.readAsDataURL(file);
+  });
+}
+$('fExtracto').addEventListener('change', function () {
+  var f = this.files && this.files[0];
+  if (!f) { this._data = null; $('pExtracto').innerHTML = ''; return; }
+  var self = this;
+  $('pExtracto').innerHTML = '<span class="muted">Leyendo archivo…</span>';
+  fileToDataURL(f).then(function (d) { self._data = d; $('pExtracto').innerHTML = '<span class="muted">📎 ' + f.name + '</span>'; })
+    .catch(function () { self._data = null; $('pExtracto').innerHTML = '<span class="msg err">No se pudo leer el archivo.</span>'; });
+});
+
+$('enviarConciliar').addEventListener('click', function () {
+  var texto = $('extractoTexto').value.trim();
+  var foto = $('fExtracto')._data || '';
+  if (!texto && !foto) { msg('conciliarMsg', 'Pega el texto del extracto o adjunta el archivo.', 'err'); return; }
+  loader(true, 'Analizando extracto…');
+  api('conciliarExtracto', { token: state.token, texto: texto, foto: foto }).then(function (r) {
+    loader(false);
+    if (!r.ok) { msg('conciliarMsg', r.error, 'err'); return; }
+    renderConciliacion(r);
+  });
+});
+
+function renderConciliacion(r) {
+  var cont = $('conciliarResultados');
+  var guardado = r.guardado ? '<p class="msg ok">📎 Extracto guardado en Drive.</p>' : '';
+  if (!r.matches || !r.matches.length) {
+    msg('conciliarMsg', r.resumen || 'No encontré montos que coincidan con arriendos o servicios pendientes.', '');
+    cont.innerHTML = guardado;
+    return;
+  }
+  msg('conciliarMsg', 'Encontré ' + r.matches.length + ' posible(s) coincidencia(s). Revisa y registra las correctas.', 'ok');
+  // Meses disponibles por apt para el selector de periodo
+  var mesesPorApt = {};
+  (state.admin.apts || []).forEach(function (e) { mesesPorApt[e.key] = e.meses.map(function (m) { return m.periodo; }); });
+
+  cont.innerHTML = guardado + r.matches.map(function (m, i) {
+    var meses = mesesPorApt[m.apt] || [];
+    var optMeses = meses.map(function (p) { return '<option' + (p === m.periodo ? ' selected' : '') + '>' + p + '</option>'; }).join('');
+    var fecha = m.fecha ? ' · ' + m.fecha : '';
+    return '<div class="match" id="match' + i + '">' +
+      '<div class="match-head"><div><div class="match-monto">' + cop(m.monto) + '</div>' +
+      '<div class="match-apt">Apto ' + m.apt.slice(-1) + ' · ' + firstName(m.nombre) + ' · ' + m.concepto + fecha + '</div></div></div>' +
+      '<div class="match-linea">' + (m.linea || '') + '</div>' +
+      '<div class="match-controls">' +
+        '<div><label>Concepto</label><select id="mc' + i + '">' +
+          '<option value="arriendo"' + (m.concepto === 'arriendo' ? ' selected' : '') + '>Arriendo</option>' +
+          '<option value="servicios"' + (m.concepto === 'servicios' ? ' selected' : '') + '>Servicios</option>' +
+        '</select></div>' +
+        '<div><label>Mes</label><select id="mp' + i + '">' + optMeses + '</select></div>' +
+        '<button class="mini-btn" id="mb' + i + '">Registrar</button>' +
+      '</div></div>';
+  }).join('');
+
+  r.matches.forEach(function (m, i) {
+    $('mb' + i).addEventListener('click', function () {
+      var concepto = $('mc' + i).value, periodo = $('mp' + i).value;
+      if (!periodo) { alert('Elige el mes.'); return; }
+      this.disabled = true; this.textContent = '…';
+      var self = this;
+      api('registrarPagoAdmin', { token: state.token, apt: m.apt, concepto: concepto, periodo: periodo, monto: m.monto, nota: 'Conciliación extracto ' + (m.fecha || '') }).then(function (res) {
+        if (!res.ok) { self.disabled = false; self.textContent = 'Registrar'; alert(res.error || 'Error'); return; }
+        $('match' + i).classList.add('done'); self.textContent = '✓ Registrado';
+        // refrescar datos del panel en segundo plano
+        api('estadoAdmin', { token: state.token }).then(function (a) { if (a.ok) state.admin = a; });
+      });
+    });
+  });
+}
 
 // ── ENVIAR LECTURA ────────────────────────────────────────────
 bindFoto('fLuz', 'pLuz'); bindFoto('fGas', 'pGas'); bindFoto('fAgua', 'pAgua');
@@ -273,7 +452,11 @@ $('enviarPago').addEventListener('click', function () {
   }
   try {
     var s = JSON.parse(localStorage.getItem('aurora_sess') || 'null');
-    if (s && s.token) { state.token = s.token; state.nombre = s.nombre; state.apt = s.apt; iniciarSesion(); return; }
+    if (s && s.token) {
+      state.token = s.token; state.nombre = s.nombre; state.apt = s.apt;
+      state.role = s.role || 'tenant'; state.conciliar = !!s.conciliar;
+      iniciarSesion(); return;
+    }
   } catch (e) {}
   show('viewLogin');
 })();
