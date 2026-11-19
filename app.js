@@ -223,14 +223,14 @@ function renderDash(r, adminMode) {
 // Badge de pendiente: botón de pago (arrendatario) o solo texto (admin)
 function payBadge(con, label, monto, periodo, adminMode) {
   if (adminMode) return '<span class="badge pend">' + label + ': ' + cop(monto) + '</span>';
-  return '<button class="badge pend badge-pay" data-con="' + con + '" data-per="' + periodo + '" data-mon="' + monto + '">' + label + ': ' + cop(monto) + ' ›</button>';
+  return '<button class="badge pend badge-pay" data-con="' + con + '" data-per="' + periodo + '" data-mon="' + Math.round(monto) + '">' + label + ': ' + cop(monto) + ' ›</button>';
 }
 // Abre "Subir comprobante" con concepto, mes y monto ya llenos
 function pagarPendiente(concepto, periodo, monto) {
   llenarPeriodos();
   $('pagoConcepto').value = concepto;
   $('pagoPeriodo').value = periodo;
-  $('pagoMonto').value = monto;
+  $('pagoMonto').value = Math.round(Number(monto) || 0);
   msg('pagoMsg', '');
   $('fComprobante').value = ''; $('fComprobante')._data = null; $('pComprobante').innerHTML = '';
   show('viewPago');
