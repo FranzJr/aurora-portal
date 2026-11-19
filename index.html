@@ -20,6 +20,12 @@
     </div>
   </header>
 
+  <!-- BANNER DE IMPERSONACIÓN (admin viendo como arrendatario) -->
+  <div id="imperBanner" class="imper-banner" hidden>
+    <span>👤 Viendo como <strong id="imperName"></strong></span>
+    <button class="link-btn" id="imperBack">‹ Volver al panel admin</button>
+  </div>
+
   <main class="wrap">
 
     <!-- ===== LOGIN ===== -->
@@ -77,6 +83,12 @@
       <h2 class="section-title">Estado de cuenta</h2>
       <div id="mesesList" class="meses"></div>
 
+      <div class="card contrato-card" id="contratoCard" hidden>
+        <div class="pago-datos-title">📑 Tu contrato</div>
+        <div id="contratoInfo"></div>
+        <button class="btn primary" id="goRenovacion" hidden>Solicitar renovación</button>
+      </div>
+
       <div class="card pago-datos">
         <div class="pago-datos-title">Datos para el pago</div>
         <div id="cuentaPago"></div>
@@ -112,6 +124,9 @@
 
       <h3 class="section-title">Ver estado de cuenta</h3>
       <div class="apt-selector" id="aptSelector"></div>
+
+      <h3 class="section-title">Ver como arrendatario (impersonar)</h3>
+      <div class="apt-selector" id="imperSelector"></div>
 
       <button class="btn action full" id="goConciliar" hidden>🏦 Conciliar extracto</button>
     </section>

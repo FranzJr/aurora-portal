@@ -87,8 +87,18 @@ textarea:focus { border-color: var(--primary); }
 .total-card { text-align: center; }
 .sum-val.big { font-size: 28px; }
 
+/* Banner de impersonación */
+.imper-banner { background: #4a148c; color: #fff; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; position: sticky; top: 0; z-index: 11; }
+.imper-banner .link-btn { color: #fff; font-weight: 700; white-space: nowrap; }
+
+/* Contrato */
+.contrato-card .pend-v { color: var(--pend); font-weight: 700; }
+
 /* Selector de apartamento */
 .apt-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.apt-btn.imper { border-color: var(--primary); }
+.apt-btn.imper .p { color: var(--primary); }
+.apt-btn .s.warn { color: var(--pend); font-weight: 700; }
 .apt-btn {
   background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius);
   box-shadow: var(--shadow); padding: 14px 8px; cursor: pointer; text-align: center;

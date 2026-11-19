@@ -166,6 +166,17 @@ function renderDash(r, adminMode) {
     '<div class="muted" style="font-size:12px;margin-top:6px">Concepto: ' +
     r.nombre.split(' ').slice(0,2).join(' ') + ' - mes - ' + r.apt + '</div>';
 
+  // Contrato (vigencia + renovación)
+  var cc = $('contratoCard'), ci = r.contrato;
+  if (ci && (ci.inicio || ci.fin)) {
+    cc.hidden = false;
+    var estadoTxt = '';
+    if (ci.vencido) estadoTxt = '<span class="pend-v">⚠️ Contrato vencido</span>';
+    else if (ci.diasRestantes != null) estadoTxt = (ci.porVencer ? '<span class="pend-v">Vence en ' + ci.diasRestantes + ' días</span>' : 'Vence en <strong>' + ci.diasRestantes + ' días</strong>');
+    $('contratoInfo').innerHTML = 'Vigencia: <strong>' + (ci.inicio || '—') + '</strong> → <strong>' + (ci.fin || '—') + '</strong>' + (estadoTxt ? '<br>' + estadoTxt : '');
+    $('goRenovacion').hidden = !!adminMode || !(ci.porVencer || ci.vencido);
+  } else { cc.hidden = true; }
+
   // Meses
   var cont = $('mesesList'); cont.innerHTML = '';
   if (!r.meses.length) { cont.innerHTML = '<div class="card muted">Aún no hay meses registrados.</div>'; return; }
@@ -230,6 +241,14 @@ $('goContrato').addEventListener('click', function () {
     window.open(r.url, '_blank');
   });
 });
+$('goRenovacion').addEventListener('click', function () {
+  if (!confirm('¿Enviar una solicitud de renovación de contrato al administrador?')) return;
+  loader(true, 'Enviando solicitud…');
+  api('renovacion', { token: state.token }).then(function (r) {
+    loader(false);
+    alert(r.ok ? '✅ Solicitud enviada. El administrador te contactará pronto.' : (r.error || 'Error'));
+  });
+});
 $('lecturaBack').addEventListener('click', function () { show('viewDash'); });
 $('pagoBack').addEventListener('click', function () { show('viewDash'); });
 $('dashBackAdmin').addEventListener('click', function () { show('viewAdmin'); });
@@ -289,22 +308,59 @@ function renderAdmin(r) {
   ) : '<div class="chart-empty">El mes actual aún no tiene recibos cerrados</div>';
   $('chartMes').innerHTML = chartM;
 
-  // Selector de apartamentos
+  // Selector de apartamentos (estado de cuenta, solo lectura)
   $('aptSelector').innerHTML = r.apts.map(function (e) {
     var tot = e.pendientes.servicios + e.pendientes.arriendo;
     var cls = tot > 0 ? 'pend' : 'ok';
     var txt = tot > 0 ? cop(tot) : 'Al día';
+    var ci = e.contrato || {};
+    var vence = ci.fin ? ('<div class="s' + (ci.porVencer ? ' warn' : '') + '">Vence ' + ci.fin + '</div>') : '';
     return '<div class="apt-btn" data-apt="' + e.key + '">' +
       '<div class="n">Apto ' + e.key.slice(-1) + '</div>' +
       '<div class="s">' + firstName(e.nombre) + '</div>' +
-      '<div class="p ' + cls + '">' + txt + '</div></div>';
+      '<div class="p ' + cls + '">' + txt + '</div>' + vence + '</div>';
   }).join('');
   Array.prototype.forEach.call(document.querySelectorAll('#aptSelector .apt-btn'), function (btn) {
     btn.addEventListener('click', function () { verAptAdmin(btn.getAttribute('data-apt')); });
   });
 
+  // Selector de impersonación (ver como el arrendatario, con acciones)
+  $('imperSelector').innerHTML = r.apts.map(function (e) {
+    return '<div class="apt-btn imper" data-apt="' + e.key + '">' +
+      '<div class="n">👤 Apto ' + e.key.slice(-1) + '</div>' +
+      '<div class="s">' + firstName(e.nombre) + '</div>' +
+      '<div class="p">Ver como →</div></div>';
+  }).join('');
+  Array.prototype.forEach.call(document.querySelectorAll('#imperSelector .apt-btn'), function (btn) {
+    btn.addEventListener('click', function () { impersonar(btn.getAttribute('data-apt')); });
+  });
+
   $('goConciliar').hidden = !r.conciliar;
 }
+
+// ── IMPERSONACIÓN ─────────────────────────────────────────────
+function impersonar(aptKey) {
+  var adminTok = state.token, adminNombre = state.nombre, adminConc = state.conciliar;
+  loader(true, 'Entrando como arrendatario…');
+  api('impersonar', { token: adminTok, apt: aptKey }).then(function (r) {
+    loader(false);
+    if (!r.ok) { alert(r.error || 'Error'); return; }
+    state._adminToken = adminTok; state._adminNombre = adminNombre; state._adminConciliar = adminConc;
+    state.token = r.token; state.nombre = r.nombre; state.apt = r.apt;
+    state.role = 'tenant'; state.impersonating = true;
+    $('imperName').textContent = firstName(r.nombre) + ' · ' + r.apt;
+    $('imperBanner').hidden = false;
+    $('userLine').textContent = firstName(r.nombre) + ' · ' + r.apt;
+    cargarEstado();
+  });
+}
+$('imperBack').addEventListener('click', function () {
+  state.token = state._adminToken; state.nombre = state._adminNombre;
+  state.conciliar = state._adminConciliar; state.role = 'admin'; state.impersonating = false;
+  $('imperBanner').hidden = true;
+  $('userLine').textContent = firstName(state.nombre) + ' · Admin';
+  cargarAdmin();
+});
 
 function firstName(n) { return String(n || '').split(/[ /]/)[0]; }
 
