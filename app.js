@@ -149,9 +149,9 @@ function renderDash(r, adminMode) {
   if (adminMode) $('dashAptTitle').textContent = r.apt + ' · ' + (r.nombre || '');
 
   $('sumServ').textContent = cop(r.pendientes.servicios);
-  $('sumServ').className = 'sum-val' + (r.pendientes.servicios === 0 ? ' zero' : '');
+  $('sumServ').className = 'sum-val' + (Math.round(r.pendientes.servicios) <= 0 ? ' zero' : '');
   $('sumArr').textContent = cop(r.pendientes.arriendo);
-  $('sumArr').className = 'sum-val' + (r.pendientes.arriendo === 0 ? ' zero' : '');
+  $('sumArr').className = 'sum-val' + (Math.round(r.pendientes.arriendo) <= 0 ? ' zero' : '');
 
   // Aviso lecturas faltantes
   var aviso = $('lecturaAviso');
@@ -183,10 +183,11 @@ function renderDash(r, adminMode) {
 
   r.meses.forEach(function (m, i) {
     var sv = m.servicios, ar = m.arriendo;
+    var servP = Math.round(sv.pendiente || 0), arrP = Math.round(ar.pendiente || 0); // evita pendientes fantasma de centavos
     var servBadge = !m.cerrado
       ? '<span class="badge pend">Servicios: por cerrar</span>'
-      : (sv.pendiente === 0 ? '<span class="badge ok">Servicios pagos</span>' : payBadge('servicios', 'Servicios', sv.pendiente, m.periodo, adminMode));
-    var arrBadge = ar.pendiente === 0 ? '<span class="badge ok">Arriendo pago</span>' : payBadge('arriendo', 'Arriendo', ar.pendiente, m.periodo, adminMode);
+      : (servP <= 0 ? '<span class="badge ok">Servicios pagos</span>' : payBadge('servicios', 'Servicios', servP, m.periodo, adminMode));
+    var arrBadge = arrP <= 0 ? '<span class="badge ok">Arriendo pago</span>' : payBadge('arriendo', 'Arriendo', arrP, m.periodo, adminMode);
 
     var det = sv.detalle;
     var filasServ = m.cerrado ? (
@@ -237,7 +238,8 @@ function pagarPendiente(concepto, periodo, monto) {
 }
 function filaKV(k, v) { return '<div class="row"><span class="k">' + k + '</span><span>' + cop(v) + '</span></div>'; }
 function filaEstado(k, v, cls) {
-  if (!v) return '';
+  v = Math.round(v || 0);
+  if (v <= 0) return '';
   return '<div class="row"><span class="k">' + k + '</span><span class="' + cls + '">' + cop(v) + '</span></div>';
 }
 
@@ -345,7 +347,7 @@ function renderAdmin(r) {
 
   // Selector de apartamentos (estado de cuenta, solo lectura)
   $('aptSelector').innerHTML = r.apts.map(function (e) {
-    var tot = e.pendientes.servicios + e.pendientes.arriendo;
+    var tot = Math.round(e.pendientes.servicios + e.pendientes.arriendo);
     var cls = tot > 0 ? 'pend' : 'ok';
     var txt = tot > 0 ? cop(tot) : 'Al día';
     var ci = e.contrato || {};
