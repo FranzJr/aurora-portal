@@ -185,8 +185,8 @@ function renderDash(r, adminMode) {
     var sv = m.servicios, ar = m.arriendo;
     var servBadge = !m.cerrado
       ? '<span class="badge pend">Servicios: por cerrar</span>'
-      : (sv.pendiente === 0 ? '<span class="badge ok">Servicios pagos</span>' : '<span class="badge pend">Servicios: ' + cop(sv.pendiente) + '</span>');
-    var arrBadge = ar.pendiente === 0 ? '<span class="badge ok">Arriendo pago</span>' : '<span class="badge pend">Arriendo: ' + cop(ar.pendiente) + '</span>';
+      : (sv.pendiente === 0 ? '<span class="badge ok">Servicios pagos</span>' : payBadge('servicios', 'Servicios', sv.pendiente, m.periodo, adminMode));
+    var arrBadge = ar.pendiente === 0 ? '<span class="badge ok">Arriendo pago</span>' : payBadge('arriendo', 'Arriendo', ar.pendiente, m.periodo, adminMode);
 
     var det = sv.detalle;
     var filasServ = m.cerrado ? (
@@ -210,8 +210,30 @@ function renderDash(r, adminMode) {
         '<div class="mes-sub">Arriendo</div>' + filasArr +
       '</div>';
     el.querySelector('.mes-head').addEventListener('click', function () { el.classList.toggle('open'); });
+    // Badges de pendiente = botón para subir comprobante pre-diligenciado
+    Array.prototype.forEach.call(el.querySelectorAll('.badge-pay'), function (b) {
+      b.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        pagarPendiente(b.getAttribute('data-con'), b.getAttribute('data-per'), b.getAttribute('data-mon'));
+      });
+    });
     cont.appendChild(el);
   });
+}
+// Badge de pendiente: botón de pago (arrendatario) o solo texto (admin)
+function payBadge(con, label, monto, periodo, adminMode) {
+  if (adminMode) return '<span class="badge pend">' + label + ': ' + cop(monto) + '</span>';
+  return '<button class="badge pend badge-pay" data-con="' + con + '" data-per="' + periodo + '" data-mon="' + monto + '">' + label + ': ' + cop(monto) + ' ›</button>';
+}
+// Abre "Subir comprobante" con concepto, mes y monto ya llenos
+function pagarPendiente(concepto, periodo, monto) {
+  llenarPeriodos();
+  $('pagoConcepto').value = concepto;
+  $('pagoPeriodo').value = periodo;
+  $('pagoMonto').value = monto;
+  msg('pagoMsg', '');
+  $('fComprobante').value = ''; $('fComprobante')._data = null; $('pComprobante').innerHTML = '';
+  show('viewPago');
 }
 function filaKV(k, v) { return '<div class="row"><span class="k">' + k + '</span><span>' + cop(v) + '</span></div>'; }
 function filaEstado(k, v, cls) {
