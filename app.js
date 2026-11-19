@@ -308,6 +308,19 @@ function renderAdmin(r) {
   ) : '<div class="chart-empty">El mes actual aún no tiene recibos cerrados</div>';
   $('chartMes').innerHTML = chartM;
 
+  // Tabla de contratos (vigencia / vencimiento)
+  $('contratosTabla').innerHTML =
+    '<table class="ctab"><thead><tr><th>Apto</th><th>Arrendatario</th><th>Inicio</th><th>Vence</th><th>Estado</th></tr></thead><tbody>' +
+    r.apts.map(function (e) {
+      var ci = e.contrato || {};
+      var est;
+      if (ci.vencido) est = '<span class="tag vencido">Vencido' + (ci.diasRestantes != null ? ' · hace ' + Math.abs(ci.diasRestantes) + 'd' : '') + '</span>';
+      else if (ci.porVencer) est = '<span class="tag porvencer">Vence en ' + ci.diasRestantes + 'd</span>';
+      else if (ci.diasRestantes != null) est = '<span class="tag vigente">Vigente · ' + ci.diasRestantes + 'd</span>';
+      else est = '<span class="tag">—</span>';
+      return '<tr><td><strong>' + e.key.slice(-1) + '</strong></td><td>' + firstName(e.nombre) + '</td><td>' + (ci.inicio || '—') + '</td><td>' + (ci.fin || '—') + '</td><td>' + est + '</td></tr>';
+    }).join('') + '</tbody></table>';
+
   // Selector de apartamentos (estado de cuenta, solo lectura)
   $('aptSelector').innerHTML = r.apts.map(function (e) {
     var tot = e.pendientes.servicios + e.pendientes.arriendo;

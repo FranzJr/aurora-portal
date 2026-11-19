@@ -125,6 +125,17 @@ textarea:focus { border-color: var(--primary); }
 .bar-fill.otros { background: #8e24aa; }
 .chart-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 8px; }
 
+/* Tabla de contratos */
+.tabla-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.ctab { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ctab th { text-align: left; color: var(--muted); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .3px; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.ctab td { padding: 10px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.ctab tr:last-child td { border-bottom: none; }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+.tag.vigente { background: var(--ok-bg); color: var(--ok); }
+.tag.porvencer { background: #fff3e0; color: #8a3d00; }
+.tag.vencido { background: var(--pend-bg); color: var(--pend); }
+
 /* Resultados conciliación */
 .match { border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; margin-top: 12px; }
 .match-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
